@@ -17,108 +17,111 @@ using System.Runtime.CompilerServices;
 
 namespace Murmur
 {
-    internal class Murmur128ManagedX64 : Murmur128
-    {
-        const ulong C1 = 0x87c37b91114253d5;
-        const ulong C2 = 0x4cf5ad432745937f;
+	public class Murmur128ManagedX64 : Murmur128
+	{
+		const ulong C1 = 0x87c37b91114253d5;
+		const ulong C2 = 0x4cf5ad432745937f;
 
-        internal Murmur128ManagedX64(uint seed = 0)
-            : base(seed)
-        {
-            Reset();
-        }
+		public Murmur128ManagedX64() : this(0)
+		{
 
-        private int Length { get; set; }
-        private ulong H1 { get; set; }
-        private ulong H2 { get; set; }
+		}
+		public Murmur128ManagedX64(uint seed) : base(seed)
+		{
+			Reset();
+		}
 
-        private void Reset()
-        {
-            // initialize hash values to seed values
-            H1 = H2 = Seed;
-            // reset our length back to 0
-            Length = 0;
-        }
+		private int Length { get; set; }
+		private ulong H1 { get; set; }
+		private ulong H2 { get; set; }
 
-        public override void Initialize()
-        {
-            Reset();
-        }
+		private void Reset()
+		{
+			// initialize hash values to seed values
+			H1 = H2 = Seed;
+			// reset our length back to 0
+			Length = 0;
+		}
 
-        protected override void HashCore(byte[] array, int ibStart, int cbSize)
-        {
-            // increment our length
-            Length += cbSize;
-            Body(array, ibStart, cbSize);
-        }
+		public override void Initialize()
+		{
+			Reset();
+		}
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void Body(byte[] data, int start, int length)
-        {
-            int remainder = length & 15;
-            int alignedLength = start + (length - remainder);
-            for (int i = start; i < alignedLength; i += 16)
-            {
-                H1 ^= (data.ToUInt64(i) * C1).RotateLeft(31) * C2;
-                H1 = (H1.RotateLeft(27) + H2) * 5 + 0x52dce729;
+		protected override void HashCore(byte[] array, int ibStart, int cbSize)
+		{
+			// increment our length
+			Length += cbSize;
+			Body(array, ibStart, cbSize);
+		}
 
-                H2 ^= (data.ToUInt64(i + 8) * C2).RotateLeft(33) * C1;
-                H2 = (H2.RotateLeft(31) + H1) * 5 + 0x38495ab5;
-            }
+		
+		private void Body(byte[] data, int start, int length)
+		{
+			int remainder = length & 15;
+			int alignedLength = start + (length - remainder);
+			for (int i = start; i < alignedLength; i += 16)
+			{
+				H1 ^= (data.ToUInt64(i) * C1).RotateLeft(31) * C2;
+				H1 = (H1.RotateLeft(27) + H2) * 5 + 0x52dce729;
 
-            if (remainder > 0)
-                Tail(data, alignedLength, remainder);
-        }
+				H2 ^= (data.ToUInt64(i + 8) * C2).RotateLeft(33) * C1;
+				H2 = (H2.RotateLeft(31) + H1) * 5 + 0x38495ab5;
+			}
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private void Tail(byte[] tail, int start, int remaining)
-        {
-            // create our keys and initialize to 0
-            ulong k1 = 0, k2 = 0;
+			if (remainder > 0)
+				Tail(data, alignedLength, remainder);
+		}
 
-            // determine how many bytes we have left to work with based on length
-            switch (remaining)
-            {
-                case 15: k2 ^= (ulong)tail[start + 14] << 48; goto case 14;
-                case 14: k2 ^= (ulong)tail[start + 13] << 40; goto case 13;
-                case 13: k2 ^= (ulong)tail[start + 12] << 32; goto case 12;
-                case 12: k2 ^= (ulong)tail[start + 11] << 24; goto case 11;
-                case 11: k2 ^= (ulong)tail[start + 10] << 16; goto case 10;
-                case 10: k2 ^= (ulong)tail[start + 9] << 8; goto case 9;
-                case 9: k2 ^= (ulong)tail[start + 8] << 0; goto case 8;
-                case 8: k1 ^= (ulong)tail[start + 7] << 56; goto case 7;
-                case 7: k1 ^= (ulong)tail[start + 6] << 48; goto case 6;
-                case 6: k1 ^= (ulong)tail[start + 5] << 40; goto case 5;
-                case 5: k1 ^= (ulong)tail[start + 4] << 32; goto case 4;
-                case 4: k1 ^= (ulong)tail[start + 3] << 24; goto case 3;
-                case 3: k1 ^= (ulong)tail[start + 2] << 16; goto case 2;
-                case 2: k1 ^= (ulong)tail[start + 1] << 8; goto case 1;
-                case 1: k1 ^= (ulong)tail[start] << 0; break;
-            }
+		
+		private void Tail(byte[] tail, int start, int remaining)
+		{
+			// create our keys and initialize to 0
+			ulong k1 = 0, k2 = 0;
 
-            H2 ^= (k2 * C2).RotateLeft(33) * C1;
-            H1 ^= (k1 * C1).RotateLeft(31) * C2;
-        }
+			// determine how many bytes we have left to work with based on length
+			switch (remaining)
+			{
+				case 15: k2 ^= (ulong)tail[start + 14] << 48; goto case 14;
+				case 14: k2 ^= (ulong)tail[start + 13] << 40; goto case 13;
+				case 13: k2 ^= (ulong)tail[start + 12] << 32; goto case 12;
+				case 12: k2 ^= (ulong)tail[start + 11] << 24; goto case 11;
+				case 11: k2 ^= (ulong)tail[start + 10] << 16; goto case 10;
+				case 10: k2 ^= (ulong)tail[start + 9] << 8; goto case 9;
+				case 9: k2 ^= (ulong)tail[start + 8] << 0; goto case 8;
+				case 8: k1 ^= (ulong)tail[start + 7] << 56; goto case 7;
+				case 7: k1 ^= (ulong)tail[start + 6] << 48; goto case 6;
+				case 6: k1 ^= (ulong)tail[start + 5] << 40; goto case 5;
+				case 5: k1 ^= (ulong)tail[start + 4] << 32; goto case 4;
+				case 4: k1 ^= (ulong)tail[start + 3] << 24; goto case 3;
+				case 3: k1 ^= (ulong)tail[start + 2] << 16; goto case 2;
+				case 2: k1 ^= (ulong)tail[start + 1] << 8; goto case 1;
+				case 1: k1 ^= (ulong)tail[start] << 0; break;
+			}
 
-        protected override byte[] HashFinal()
-        {
-            ulong len = (ulong)Length;
-            H1 ^= len; H2 ^= len;
+			H2 ^= (k2 * C2).RotateLeft(33) * C1;
+			H1 ^= (k1 * C1).RotateLeft(31) * C2;
+		}
 
-            H1 += H2;
-            H2 += H1;
+		protected override byte[] HashFinal()
+		{
+			ulong len = (ulong)Length;
+			H1 ^= len; H2 ^= len;
 
-            H1 = H1.FMix();
-            H2 = H2.FMix();
+			H1 += H2;
+			H2 += H1;
 
-            H1 += H2;
-            H2 += H1;
+			H1 = H1.FMix();
+			H2 = H2.FMix();
 
-            var result = new byte[16];
-            Array.Copy(BitConverter.GetBytes(H1), 0, result, 0, 8);
-            Array.Copy(BitConverter.GetBytes(H2), 0, result, 8, 8);
+			H1 += H2;
+			H2 += H1;
 
-            return result;
-        }
-    }
+			var result = new byte[16];
+			Array.Copy(BitConverter.GetBytes(H1), 0, result, 0, 8);
+			Array.Copy(BitConverter.GetBytes(H2), 0, result, 8, 8);
+
+			return result;
+		}
+	}
 }
