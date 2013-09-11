@@ -25,7 +25,10 @@ namespace MurmurHash.Benchmark
 				var process = Process.GetCurrentProcess();
 				random.NextBytes(val);
 
+				//Warm up
+				obj.ComputeHash(val);
 
+				//Profile
 				var sw = Stopwatch.StartNew();
 				var mem1 = process.PrivateMemorySize64;
 				for (int i = 0; i < count; i++)
