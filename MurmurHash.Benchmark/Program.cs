@@ -15,7 +15,7 @@ namespace MurmurHash.Benchmark
 			{
 				var type = Type.GetType(string.Join(" ", args));
 				var obj = (HashAlgorithm)Activator.CreateInstance(type);
-
+				
 				Console.WriteLine(type.Name);
 				Console.WriteLine();
 
