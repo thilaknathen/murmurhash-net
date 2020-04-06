@@ -21,6 +21,7 @@ namespace Murmur
     {
         protected const uint C1 = 0xcc9e2d51;
         protected const uint C2 = 0x1b873593;
+		protected const uint C3 = 0x1b873594;
 
         private readonly uint _Seed;
 
